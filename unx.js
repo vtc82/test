@@ -77,50 +77,66 @@
             that.uniAuto.addClass('hidden');
             that.element.append(that.showRunTool);
             that.responseBuy();
-          }, timeDelay);
+          }, timeDelay + 500);
         }
       });
     },
     responseBuy: function() {
       var that = this;
-      $.post('/ico', {
+      $.post('/ico',{
         unx_amount: that.unx_amount.val(),
         captcha_secret: that.captcha_secret.val(),
         captcha_key2: that.captcha_key2.val()
-      }, function (res) {
-        if (res.success) {
-          console.log('---- success responseBuy ----- ');
-          that.isLoad = false;
-          that.getUserInfo();
-          setTimeout(function () {
-            that.getIcoInfo();
-            that.getUserInfo();
-          }, 6666);
-        }
       })
+        .done(function (res) {
+          if (res.success) {
+            console.log('---- success responseBuy ----- ');
+            that.isLoad = false;
+            that.getUserInfo();
+            setTimeout(function () {
+              that.getIcoInfo();
+              that.getUserInfo();
+            }, 6666);
+          }
+          if (res.error) {
+            setTimeout(function() {that.responseBuy()}, 3333)
+          }
+        })
+        .fail(function() {
+          that.responseBuy();
+        })
     },
     getUserInfo: function() {
       var that = this;
-      $.get('/user/info', function (res) {
-        if (res.success) {
-          console.log('--- success getUserInfo -----');
-          if (that.isLoad) {
-            $('#show-run-tool h1').text('Kết quả : ', res.ico_orders[0].status +'^^' );
+      $.get('/user/info')
+        .done(function (res) {
+          if (res.success) {
+            console.log('--- success getUserInfo -----');
+            if (that.isLoad) {
+              $('#show-run-tool h1').text('Kết quả : ', res.ico_orders[0].status +'^^' );
+            }
+          } else {
+            console.log('not success', res);
           }
-        } else {
-          console.log('not success', res);
-        }
-        that.isLoad = true;
-      });
+          that.isLoad = true;
+        })
+        .fail(function(){
+          that.getUserInfo();
+        })
     },
     getIcoInfo: function() {
-      $.get('/ico/info', function (res) {
-        if(res.success) {
-          console.log('--- success getIcoInfo -----');
-        } else {
-          console.log('not success', res);
-        }
-      });
+      var that = this;
+      $.get('/ico/info')
+        .done( function (res) {
+          if(res.success) {
+            console.log('--- success getIcoInfo -----');
+          } else {
+            console.log('not success', res);
+          }
+        })
+        .fail(function() {
+          that.getIcoInfo();
+        })        
     }
   };
 
