@@ -17,6 +17,7 @@
       var el = this.element;
       this.boxTime = el.find('#time-box');
       this.uniAuto = el.find('.unx-auto');
+      this.uniAuto.prepend('<h1>Version 1.0 300</h1>');
       this.btnSubmitBuy = this.uniAuto.find('#submit-so-luong-mua');
       this.btnNhapLai = this.uniAuto.find('#nhap-lai');
       this.resultUNX = this.uniAuto.find('#so-unx-mua');
@@ -73,11 +74,14 @@
           var timestamp = res.next_ico_date.from_timestamp,
               now = new Date().getTime(),
               timeDelay = timestamp - now;
+
+            that.responseBuy();
+          
           setTimeout(function() {
             that.uniAuto.addClass('hidden');
             that.element.append(that.showRunTool);
             that.responseBuy();
-          }, timeDelay + 500);
+          }, timeDelay + 300);
         }
       });
     },

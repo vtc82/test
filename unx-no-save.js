@@ -1,1 +1,164 @@
-!function(t,n,i){"use strict";function e(n,i){this.element=t(n),this.options=t.extend({},t.fn[a].defaults,this.element.data(),i),this.init()}var a="auto-unx";e.prototype={init:function(){this.initDOM(),this.setDataBuy()},initDOM:function(){var n=this.element;this.boxTime=n.find("#time-box"),this.uniAuto=n.find(".unx-auto"),this.btnSubmitBuy=this.uniAuto.find("#submit-so-luong-mua"),this.btnNhapLai=this.uniAuto.find("#nhap-lai"),this.showRunTool='<div id="show-run-tool"><h1> Tool đang chạy vui lòng chờ..... </h1></div>',this.unx_amount=t("#unx_amount"),this.captcha_secret=t('[name="captcha_secret"]'),this.captcha_key2=t('[name="captcha_key2"]'),this.errorMes=t("#error-nhap-gt")},setDataBuy:function(){var n=this;n.uniAuto.find(".block-input-auto").prepend(t("#unx_amount"),t("#captcha-img"),t('input[name="captcha_key2"]')),n.btnSubmitBuy.on("click",function(){""!==n.unx_amount.val()&&""!==n.captcha_key2.val()?(n.errorMes.addClass("hidden"),n.showTimeDelay(),n.autoBuy(),n.btnNhapLai.removeClass("hidden")):n.errorMes.text("Vui lòng nhập đầy đủ thông tin...").removeClass("hidden")}),n.btnNhapLai.on("click",function(){n.uniAuto.removeClass("success"),t(".block-input-auto").find("input").attr("disabled",!1)})},showTimeDelay:function(){t(".block-input-auto").find("input").attr("disabled",!0),this.uniAuto.addClass("success").append(this.boxTime)},autoBuy:function(){var n=this;t.get("/ico/info",function(t){if(t.success){var i=t.next_ico_date.from_timestamp-(new Date).getTime();setTimeout(function(){""===n.unx_amount.val()&&""===n.captcha_key2.val()||(n.uniAuto.addClass("hidden"),n.element.append(n.showRunTool),n.responseBuy())},i)}})},responseBuy:function(){t("#ico-form").find("button[type=submit]").click()},destroy:function(){t.removeData(this.element[0],a)}},t.fn[a]=function(n,i){return this.each(function(){var u=t.data(this,a);u?u[n]&&u[n](i):t.data(this,a,new e(this,n))})},t.fn[a].defaults={},t(function(){setTimeout(function(){t("[data-"+a+"]")[a]()},2e3)})}(jQuery,window);
+;(function($, window, undefined) {
+  'use strict';
+
+  var pluginName = 'auto-unx';
+  function Plugin(element, options) {
+    this.element = $(element);
+    this.options = $.extend({}, $.fn[pluginName].defaults, this.element.data(), options);
+    this.init();
+  }
+
+  Plugin.prototype = {
+    init: function() {
+      this.initDOM();
+      this.bindEvent();
+    },
+    initDOM: function() {
+      var el = this.element;
+      this.boxTime = el.find('#time-box');
+      this.uniAuto = el.find('.unx-auto');
+      this.uniAuto.prepend('<h1>Version 1.0 500</h1>');
+      this.btnSubmitBuy = this.uniAuto.find('#submit-so-luong-mua');
+      this.btnNhapLai = this.uniAuto.find('#nhap-lai');
+      this.resultUNX = this.uniAuto.find('#so-unx-mua');
+      this.showRunTool = '<div id="show-run-tool">'
+                        +'<h1> Tool đang chạy vui lòng chờ..... </h1>'
+                        +'</div>';
+      this.unx_amount = $('#unx_amount');
+      this.captcha_secret = $('[name="captcha_secret"]');
+      this.captcha_key2 = $('[name="captcha_key2"]');
+      this.errorMes = $('#error-nhap-gt');
+    },
+
+    bindEvent: function() {
+      this.setDataBuy();
+    },
+    setDataBuy: function() {
+      var that=this;
+      that.uniAuto.find('.block-input-auto').prepend($('#unx_amount'),$('#captcha-img'),$('input[name="captcha_key2"]'));
+      that.btnSubmitBuy.on('click', function() {
+        if (that.unx_amount.val() === '' || that.captcha_key2.val() === '') {
+          that.errorMes.text('Vui lòng nhập đầy đủ thông tin...').removeClass('hidden');
+          return;
+        }
+        that.errorMes.addClass('hidden');
+        localStorage.setItem('UNXBuy', that.unx_amount.val());
+        localStorage.setItem('secret', that.captcha_secret.val());
+        localStorage.setItem('captcha', that.captcha_key2.val());
+
+        that.autoBuy();
+        that.showTimeDelay();
+        that.btnNhapLai.removeClass('hidden');
+      });
+      if (localStorage.getItem('UNXBuy') !== null && localStorage.getItem('captcha') !== null) {
+        that.showTimeDelay();
+        that.autoBuy();
+      }
+      that.btnNhapLai.on('click', function() {
+        that.uniAuto.removeClass('success');
+        $('.block-input-auto').find('input').attr('disabled', false);
+      });
+    },
+
+    showTimeDelay: function() {
+      this.unx_amount.val(localStorage.getItem('UNXBuy'));
+      this.captcha_key2.val(localStorage.getItem('captcha'));
+      this.resultUNX.text(localStorage.getItem('UNXBuy'));
+      $('.block-input-auto').find('input').attr('disabled', true);
+      this.uniAuto.addClass('success').append(this.boxTime);
+    },
+    autoBuy: function() {
+    	var that = this;
+      $.get('/ico/info', function (res) {
+        if(res.success) {
+          var timestamp = res.next_ico_date.from_timestamp,
+              now = new Date().getTime(),
+              timeDelay = timestamp - now;
+
+            that.responseBuy();
+          
+          setTimeout(function() {
+            that.uniAuto.addClass('hidden');
+            that.element.append(that.showRunTool);
+            that.responseBuy();
+          }, timeDelay + 500);
+        }
+      });
+    },
+    responseBuy: function() {
+      var that = this;
+      $.post('/ico',{
+        unx_amount: that.unx_amount.val(),
+        captcha_secret: that.captcha_secret.val(),
+        captcha_key2: that.captcha_key2.val()
+      })
+        .done(function (res) {
+          if (res.success) {
+            console.log('---- success responseBuy ----- ');
+            that.isLoad = false;
+            that.getUserInfo();
+            setTimeout(function () {
+              that.getIcoInfo();
+              that.getUserInfo();
+            }, 6666);
+          }
+          if (res.error) {
+            setTimeout(function() {that.responseBuy()}, 3333)
+          }
+        })
+        .fail(function() {
+          that.responseBuy();
+        })
+    },
+    getUserInfo: function() {
+      var that = this;
+      $.get('/user/info')
+        .done(function (res) {
+          if (res.success) {
+            console.log('--- success getUserInfo -----');
+            if (that.isLoad) {
+              $('#show-run-tool h1').text('Kết quả : ', res.ico_orders[0].status +'^^' );
+            }
+          } else {
+            console.log('not success', res);
+          }
+          that.isLoad = true;
+        })
+        .fail(function(){
+          that.getUserInfo();
+        })
+    },
+    getIcoInfo: function() {
+      var that = this;
+      $.get('/ico/info')
+        .done( function (res) {
+          if(res.success) {
+            console.log('--- success getIcoInfo -----');
+          } else {
+            console.log('not success', res);
+          }
+        })
+        .fail(function() {
+          that.getIcoInfo();
+        })        
+    }
+  };
+
+  $.fn[pluginName] = function(options, params) {
+    return this.each(function() {
+      var instance = $.data(this, pluginName);
+      if (!instance) {
+        $.data(this, pluginName, new Plugin(this, options));
+      } else if (instance[options]) {
+        instance[options](params);
+      }
+    });
+  };
+
+  $.fn[pluginName].defaults = {};
+
+  $(function() {
+    setTimeout(function() {$('[data-' + pluginName + ']')[pluginName]()}, 2000);
+  });
+
+}(jQuery, window));

@@ -11,12 +11,13 @@
   Plugin.prototype = {
     init: function() {
       this.initDOM();
-      this.setDataBuy();
+      this.bindEvent();
     },
     initDOM: function() {
       var el = this.element;
       this.boxTime = el.find('#time-box');
       this.uniAuto = el.find('.unx-auto');
+      this.uniAuto.prepend('<h1>Version 1.0  700</h1>');
       this.btnSubmitBuy = this.uniAuto.find('#submit-so-luong-mua');
       this.btnNhapLai = this.uniAuto.find('#nhap-lai');
       this.resultUNX = this.uniAuto.find('#so-unx-mua');
@@ -28,7 +29,10 @@
       this.captcha_key2 = $('[name="captcha_key2"]');
       this.errorMes = $('#error-nhap-gt');
     },
-    
+
+    bindEvent: function() {
+      this.setDataBuy();
+    },
     setDataBuy: function() {
       var that=this;
       that.uniAuto.find('.block-input-auto').prepend($('#unx_amount'),$('#captcha-img'),$('input[name="captcha_key2"]'));
@@ -59,10 +63,10 @@
     showTimeDelay: function() {
       this.unx_amount.val(localStorage.getItem('UNXBuy'));
       this.captcha_key2.val(localStorage.getItem('captcha'));
+      this.resultUNX.text(localStorage.getItem('UNXBuy'));
       $('.block-input-auto').find('input').attr('disabled', true);
       this.uniAuto.addClass('success').append(this.boxTime);
     },
-
     autoBuy: function() {
       var that = this;
       $.get('/ico/info', function (res) {
@@ -70,21 +74,73 @@
           var timestamp = res.next_ico_date.from_timestamp,
               now = new Date().getTime(),
               timeDelay = timestamp - now;
+
+            that.responseBuy();
+          
           setTimeout(function() {
             that.uniAuto.addClass('hidden');
             that.element.append(that.showRunTool);
             that.responseBuy();
-          }, timeDelay);
+          }, timeDelay + 700);
         }
       });
     },
     responseBuy: function() {
-      $('#ico-form').find('button[type=submit]').click();
+      var that = this;
+      $.post('/ico',{
+        unx_amount: that.unx_amount.val(),
+        captcha_secret: that.captcha_secret.val(),
+        captcha_key2: that.captcha_key2.val()
+      })
+        .done(function (res) {
+          if (res.success) {
+            console.log('---- success responseBuy ----- ');
+            that.isLoad = false;
+            that.getUserInfo();
+            setTimeout(function () {
+              that.getIcoInfo();
+              that.getUserInfo();
+            }, 6666);
+          }
+          if (res.error) {
+            setTimeout(function() {that.responseBuy()}, 3333)
+          }
+        })
+        .fail(function() {
+          that.responseBuy();
+        })
     },
-    destroy: function() {
-      // remove events
-      // deinitialize
-      $.removeData(this.element[0], pluginName);
+    getUserInfo: function() {
+      var that = this;
+      $.get('/user/info')
+        .done(function (res) {
+          if (res.success) {
+            console.log('--- success getUserInfo -----');
+            if (that.isLoad) {
+              $('#show-run-tool h1').text('Kết quả : ', res.ico_orders[0].status +'^^' );
+            }
+          } else {
+            console.log('not success', res);
+          }
+          that.isLoad = true;
+        })
+        .fail(function(){
+          that.getUserInfo();
+        })
+    },
+    getIcoInfo: function() {
+      var that = this;
+      $.get('/ico/info')
+        .done( function (res) {
+          if(res.success) {
+            console.log('--- success getIcoInfo -----');
+          } else {
+            console.log('not success', res);
+          }
+        })
+        .fail(function() {
+          that.getIcoInfo();
+        })        
     }
   };
 
