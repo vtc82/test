@@ -1,0 +1,24 @@
+{
+  "manifest_version": 2,
+  "name": "UNX",
+  "version": "1.0.4",
+  "description": "UNICOIN - Auto buy",
+
+  "icons" : {
+    "16": "logo.png", 
+    "48": "logo.png", 
+    "128": "logo.png"
+  },
+  "browser_action": {
+    "default_icon": "logo.png",
+    "default_title": "Ten show",
+    "default_popup": "myPopup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://wake.unixcoin.com/*"],
+      "css": ["mystyles.css"],
+      "js": ["jquery-3.2.1.min.js", "site.js"]
+    }
+  ]
+}

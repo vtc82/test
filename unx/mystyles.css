@@ -1,0 +1,49 @@
+.unx-auto {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  z-index: 99999999999999;
+  border: 2px solid red;
+  padding: 10px;
+  background-color: #ffeaca;
+  transform: translateX(-50%);
+  transition: all 500ms ease-in-out;
+}
+.block-input-auto button {
+	margin-top: 15px;
+}
+#so-unx-mua {
+	color: red;
+	font-weight: bold;
+}
+#nhap-lai {
+	display: none;
+}
+.unx-auto.success #nhap-lai {
+	display: block;
+}
+
+.unx-auto.success #submit-so-luong-mua {
+  display: none;
+}
+.unx-auto.animate {
+	top: 50%;
+	right: 50%;
+	transform: translate(-50%,-50%);
+}
+
+#show-run-tool {
+	position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 99999999999999;
+  border: 2px solid red;
+  padding: 10px;
+  background-color: #ffeaca;
+  transform: translate(-50%, -50%);
+}
+#error-nhap-gt {
+  font-size: 20px;
+  padding: 10px;
+  margin-top: 10px;
+}
