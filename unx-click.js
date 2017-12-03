@@ -31,7 +31,7 @@
       this.total = 10;
       this.delayRequest = 3600;
       this.overtime = 300;
-      this.uniAuto.prepend('<h1>Version 1.0 'this.overtime'</h1>');
+      this.uniAuto.prepend('<h1>Version 1.0.1 </h1> <div>'+this.overtime+'</div>');
     },
 
     bindEvent: function() {
