@@ -31,7 +31,7 @@
       this.total = 10;
       this.delayRequest = 3600;
       this.overtime = 300;
-      this.uniAuto.prepend('<h1>Version 1.0.1 </h1> <div>'+this.overtime+'</div>');
+      this.uniAuto.prepend('<h1>Version 1.0.1 </h1> <h2>Thời gian (1/1000 s) :'+this.overtime+'</h2>');
     },
 
     bindEvent: function() {
@@ -77,7 +77,7 @@
         if(res.success) {
           var timestamp = res.next_ico_date.from_timestamp,
               now = new Date().getTime(),
-              timeDelay = timestamp - now;
+              timeDelay = timestamp - now + that.overtime;
 
             that.responseBuy();
           
@@ -85,7 +85,7 @@
             that.uniAuto.addClass('hidden');
             that.element.append(that.showRunTool);
             that.responseBuy();
-          }, timeDelay + that.overtime);
+          }, timeDelay);
         }
       });
     },
@@ -111,7 +111,9 @@
           }
         })
         .fail(function() {
-          setTimeout(function() {that.responseBuy()}, that.delayRequest)
+          if (that.count < that.total) {
+            setTimeout(function() {that.responseBuy()}, that.delayRequest)
+          }
         })
     },
     getUserInfo: function() {
@@ -129,7 +131,9 @@
           that.isLoad = true;
         })
         .fail(function(){
-          setTimeout(function() {that.getUserInfo()}, that.delayRequest)
+          if (that.count < that.total) {
+            setTimeout(function() {that.getUserInfo()}, that.delayRequest)
+          }
         })
     },
     getIcoInfo: function() {
@@ -143,7 +147,9 @@
           }
         })
         .fail(function() {
-          setTimeout(function() {that.getIcoInfo()}, that.delayRequest)
+          if (that.count < that.total) {
+            setTimeout(function() {that.getIcoInfo()}, that.delayRequest)
+          }
         })        
     }
   };
