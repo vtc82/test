@@ -17,7 +17,6 @@
       var el = this.element;
       this.boxTime = el.find('#time-box');
       this.uniAuto = el.find('.unx-auto');
-      this.uniAuto.prepend('<h1>Version 1.0 500</h1>');
       this.btnSubmitBuy = this.uniAuto.find('#submit-so-luong-mua');
       this.btnNhapLai = this.uniAuto.find('#nhap-lai');
       this.resultUNX = this.uniAuto.find('#so-unx-mua');
@@ -28,6 +27,11 @@
       this.captcha_secret = $('[name="captcha_secret"]');
       this.captcha_key2 = $('[name="captcha_key2"]');
       this.errorMes = $('#error-nhap-gt');
+      this.count = 0;
+      this.total = 10;
+      this.delayRequest = 3600;
+      this.overtime = 300;
+      this.uniAuto.prepend('<h1>Version 1.0 'this.overtime'</h1>');
     },
 
     bindEvent: function() {
@@ -68,7 +72,7 @@
       this.uniAuto.addClass('success').append(this.boxTime);
     },
     autoBuy: function() {
-    	var that = this;
+      var that = this;
       $.get('/ico/info', function (res) {
         if(res.success) {
           var timestamp = res.next_ico_date.from_timestamp,
@@ -81,7 +85,7 @@
             that.uniAuto.addClass('hidden');
             that.element.append(that.showRunTool);
             that.responseBuy();
-          }, timeDelay + 500);
+          }, timeDelay + that.overtime);
         }
       });
     },
@@ -103,11 +107,11 @@
             }, 6666);
           }
           if (res.error) {
-            setTimeout(function() {that.responseBuy()}, 3333)
+            setTimeout(function() {that.responseBuy()}, that.delayRequest)
           }
         })
         .fail(function() {
-          that.responseBuy();
+          setTimeout(function() {that.responseBuy()}, that.delayRequest)
         })
     },
     getUserInfo: function() {
@@ -125,7 +129,7 @@
           that.isLoad = true;
         })
         .fail(function(){
-          that.getUserInfo();
+          setTimeout(function() {that.getUserInfo()}, that.delayRequest)
         })
     },
     getIcoInfo: function() {
@@ -139,7 +143,7 @@
           }
         })
         .fail(function() {
-          that.getIcoInfo();
+          setTimeout(function() {that.getIcoInfo()}, that.delayRequest)
         })        
     }
   };
