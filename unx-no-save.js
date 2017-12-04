@@ -83,7 +83,6 @@
     autoBuy: function() {
       var that = this,
       timeDelay = that.getTime() + that.overtime;
-        that.responseBuy();
         
       setTimeout(function() {
         that.uniAuto.addClass('hidden');
