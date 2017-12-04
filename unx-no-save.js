@@ -2,12 +2,6 @@
   'use strict';
 
   var pluginName = 'auto-unx';
-  var store = [];
-  var oldf = console.log;
-  console.log = function(){
-     store.push(arguments);
-     oldf.apply(console, arguments);
-  }
   function Plugin(element, options) {
     this.element = $(element);
     this.options = $.extend({}, $.fn[pluginName].defaults, this.element.data(), options);
@@ -22,6 +16,11 @@
     initDOM: function() {
       var el = this.element;
       this.boxTime = el.find('#time-box');
+      this.times = {
+        hh : this.boxTime.find('#ico-open-hh').text().trim(),
+        mm : this.boxTime.find('#ico-open-mm').text().trim(),
+        ss : this.boxTime.find('#ico-open-ss').text().trim()
+      };
       this.uniAuto = el.find('.unx-auto');
       this.btnSubmitBuy = this.uniAuto.find('#submit-so-luong-mua');
       this.btnNhapLai = this.uniAuto.find('#nhap-lai');
@@ -35,8 +34,8 @@
       this.errorMes = $('#error-nhap-gt');
       this.count = 0;
       this.total = 10;
-      this.delayRequest = 3600;
-      this.overtime = 1000;
+      this.delayRequest = 5555;
+      this.overtime = 0;
       this.uniAuto.prepend('<h1>Version 1.0.1 </h1> <h2>Thời gian (1/1000 s) :'+this.overtime+'</h2>');
     },
 
@@ -77,89 +76,51 @@
       $('.block-input-auto').find('input').attr('disabled', true);
       this.uniAuto.addClass('success').append(this.boxTime);
     },
+    getTime: function () {
+      var times = this.times;
+      return (Number(times.hh) * 60 + Number(times.mm))*60 + Number(times.ss);
+    },
     autoBuy: function() {
-      var that = this;
-      $.get('/ico/info', function (res) {
-        if(res.success) {
-          var timestamp = res.next_ico_date.from_timestamp,
-              now = new Date().getTime(),
-              timeDelay = timestamp - now  + that.overtime;
-
-            that.responseBuy();
-          
-          setTimeout(function() {
-            that.uniAuto.addClass('hidden');
-            that.element.append(that.showRunTool);
-            that.responseBuy();
-          }, timeDelay);
-        }
-      });
+      var that = this,
+      timeDelay = that.getTime() + that.overtime;
+        that.responseBuy();
+        
+      setTimeout(function() {
+        that.uniAuto.addClass('hidden');
+        that.element.append(that.showRunTool);
+        that.responseBuy();
+      }, timeDelay);
     },
     responseBuy: function() {
       var that = this;
-      console.time("Time this");
-      $.post('/ico',{
-        unx_amount: that.unx_amount.val(),
-        captcha_secret: that.captcha_secret.val(),
-        captcha_key2: that.captcha_key2.val()
-      })
-        .done(function (res) {
+      $.ajax({
+        url: '/ico',
+        method: 'POST',
+        data: {
+          unx_amount: that.unx_amount.val(),
+          captcha_secret: that.captcha_secret.val(),
+          captcha_key2: that.captcha_key2.val()
+        },
+        success: function(res) {
+          console.log('success: ', res)
           if (res.success) {
-            console.log('---- success responseBuy ----- ');
-            console.timeEnd('Time end success responseBuy');
-            that.isLoad = false;
-            that.getUserInfo();
-            setTimeout(function () {
-              that.getIcoInfo();
-              that.getUserInfo();
-            }, 6666);
+            window.location.reload();
           }
           if (res.error) {
-            console.log('-------- error responseBuy ---------');
-            setTimeout(function() {that.responseBuy()}, that.delayRequest)
-          }
-        })
-        .fail(function() {
-          if (that.count < that.total) {
-            setTimeout(function() {that.responseBuy()}, that.delayRequest)
-          }
-        })
-    },
-    getUserInfo: function() {
-      var that = this;
-      $.get('/user/info')
-        .done(function (res) {
-          if (res.success) {
-            console.log('--- success getUserInfo -----');
-            if (that.isLoad) {
-              $('#show-run-tool h1').text('Kết quả : ', res.ico_orders[0].status +'^^' );
+            if (that.count < that.total) {
+              that.count +=1;
+              setTimeout(function() {that.responseBuy()}, that.delayRequest);
             }
-          } else {
-            console.log('not success', res);
           }
-          that.isLoad = true;
-        })
-        .fail(function(){
+        },
+        error: function(err) {
           if (that.count < that.total) {
-            setTimeout(function() {that.getUserInfo()}, that.delayRequest)
+            console.log('error status', err.status);
+            that.count +=1;
+            setTimeout(function() {that.responseBuy()}, that.delayRequest);
           }
-        })
-    },
-    getIcoInfo: function() {
-      var that = this;
-      $.get('/ico/info')
-        .done( function (res) {
-          if(res.success) {
-            console.log('--- success getIcoInfo -----');
-          } else {
-            console.log('not success', res);
-          }
-        })
-        .fail(function() {
-          if (that.count < that.total) {
-            setTimeout(function() {that.getIcoInfo()}, that.delayRequest)
-          }
-        })        
+        }
+      });
     }
   };
 
@@ -178,7 +139,6 @@
 
   $(function() {
     setTimeout(function() {$('[data-' + pluginName + ']')[pluginName]()}, 2000);
-
   });
 
 }(jQuery, window));
